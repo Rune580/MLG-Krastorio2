@@ -15,6 +15,8 @@ local function CreateDankAmmo(originalItemName)
 
     ammo.icons = CreateDankIconFromAmmo(ammo)
 
+    ammo = CreateVariationsFromAmmo(ammo)
+
     return ammo
 end
 

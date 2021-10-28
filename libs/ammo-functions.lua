@@ -1,4 +1,5 @@
 local vars = require("libs.vars")
+local resources = require("libs.resources")
 
 local function IsTableAnArray(table)
     if table
@@ -38,13 +39,56 @@ function CreateDankIconFromAmmo(ammo)
     local icons = ValidateIcons(ammo)
 
     local backgroundIcon = {
-        icon = "__mlg-krastorio2__/graphics/dank-background.png",
+        icon = resources.dank_background_path,
         icon_size = 64
     }
 
     table.insert(icons, 1, backgroundIcon)
 
     return icons
+end
+
+-- Ensures that the "pictures" table has a valid "layers" table
+local function ValidatePictures(ammo)
+    local pictures = {}
+    local layers = {}
+
+    if IsTableAnArray(ammo.pictures) then -- If the picture table is an array of pictures, copy each entry into the layers table, then finally assign the key "layers" in the picture table to the layers table.
+        for _, picture in ipairs(ammo.pictures) do
+            local copy = table.deepcopy(picture)
+            table.insert(layers, copy)
+        end
+
+        pictures["layers"] = layers
+        ammo.pictures = pictures
+    elseif not ammo.pictures.layers  then -- Otherwise if the picture isn't an array and it doesn't have the key "layers", create said key.
+        local copy = table.deepcopy(ammo.pictures)
+        table.insert(layers, copy)
+
+        pictures["layers"] = layers
+        ammo.pictures = pictures
+    end
+
+    return ammo
+end
+
+function CreateVariationsFromAmmo(ammo)
+    -- First check to see if the ammo needs to modified in the first place.
+    if not ammo.pictures then
+        return ammo -- Ammo doesn't have any variations, no need to modify any.
+    end
+
+    ammo = ValidatePictures(ammo) -- Validate the picture table before we modify it.
+
+    local picture = {
+        size = 64,
+        filename = resources.dank_background_path,
+        scale = 0.25
+    }
+
+    table.insert(ammo.pictures.layers, 1, picture)
+
+    return ammo
 end
 
 function AddDankToTargetEffectsOfAmmo(ammo)
